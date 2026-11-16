@@ -1,6 +1,6 @@
 # memvault-ui
 
-Web UI for [memvault](https://github.com/iurux/memvault): browse, search, edit, tag, archive and delete the AI conversations saved in your local memvault database.
+Web UI for [memvault](https://github.com/iurux/memvault): browse, search, edit, star, tag, archive and delete the AI conversations saved in your local memvault database.
 
 It talks to the memvault API on your own machine (`http://127.0.0.1:8765`), so your data never leaves your computer.
 
@@ -41,6 +41,7 @@ The dev server reloads by itself; just refresh the window.
 | `/` | search |
 | `j` / `k` | next / previous conversation |
 | `Enter` | open |
+| `s` | star / unstar |
 | `e` | archive / unarchive |
 | `#` | delete permanently |
 | `Esc` | close or clear |
