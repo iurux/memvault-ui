@@ -1,4 +1,4 @@
-import { createSampleConversations, type Conversation, type ConversationSummary } from './mock-data';
+import { createSampleConversations, type Conversation, type Message, type ConversationSummary } from './mock-data';
 export type { Conversation, ConversationSummary, Message, Source } from './mock-data';
 export interface TagCount { tag: string; count: number }
 export interface SearchResult { conversation_id: string; title: string; snippet: string; score: number }
@@ -66,6 +66,16 @@ export class ArchiveApi {
     if (!found) throw new ApiError('Conversation not found.');
     Object.assign(found, changes);
     if (changes.archived !== undefined) found.archived_at = changes.archived ? new Date().toISOString() : null;
+  }
+  async setMessages(id: string, messages: { role: string; content: string }[]): Promise<Conversation> {
+    const kept = messages.filter(m => m.content.trim() !== '').map(m => ({ role: m.role, content: m.content }));
+    if (this.mode !== 'sample') return this.request(`/api/conversations/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ messages: kept }) });
+    const found = this.samples.find(c => c.id === id);
+    if (!found) throw new ApiError('Conversation not found.');
+    const now = new Date().toISOString();
+    found.messages = kept.map((m, i) => ({ role: m.role as Message['role'], content: m.content, created_at: found.messages[i]?.created_at ?? now }));
+    found.snippet = (kept[0]?.content ?? '').replace(/[#*`\n]/g, ' ').slice(0, 160);
+    return this.get(id);
   }
   async delete(id: string): Promise<void> {
     if (this.mode !== 'sample') { await this.request(`/api/conversations/${encodeURIComponent(id)}`, { method: 'DELETE' }); return; }

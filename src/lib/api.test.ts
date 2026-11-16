@@ -61,4 +61,16 @@ describe('local archive contract', () => {
     expect(fetchMock.mock.calls[1]?.[0]).toContain('archived=true');
     expect(fetchMock.mock.calls[2]?.[0]).toContain('include_archived=true');
   });
+  it('replaces the full message list in order and drops empty messages', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError()));
+    const api = new ArchiveApi(); await api.connect();
+    const updated = await api.setMessages('soup', [{ role: 'note', content: 'B' }, { role: 'user', content: '  ' }, { role: 'assistant', content: 'A' }]);
+    expect(updated.messages.map(m => [m.role, m.content])).toEqual([['note', 'B'], ['assistant', 'A']]);
+  });
+  it('sends the whole message list as a PATCH', async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => new Response('[]')); vi.stubGlobal('fetch', fetchMock);
+    const api = new ArchiveApi(); await api.connect();
+    await api.setMessages('soup', [{ role: 'user', content: 'Hi' }, { role: 'note', content: '' }]);
+    expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ method: 'PATCH', body: '{"messages":[{"role":"user","content":"Hi"}]}' });
+  });
 });
