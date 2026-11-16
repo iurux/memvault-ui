@@ -43,4 +43,22 @@ describe('local archive contract', () => {
     await api.patch('soup', { title: 'Updated' });
     expect(fetchMock.mock.calls[2]?.[1]).toMatchObject({ method: 'PATCH', body: '{"title":"Updated"}' });
   });
+  it('keeps archived conversations out of default lists and search, and restores them', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError()));
+    const api = new ArchiveApi(); await api.connect();
+    await api.patch('soup', { archived: true });
+    expect((await api.list()).map(c => c.id)).not.toContain('soup');
+    expect((await api.list({ archived: true })).map(c => c.id)).toContain('soup');
+    expect(await api.search('lemon')).toHaveLength(0);
+    expect((await api.search('lemon', true)).map(c => c.conversation_id)).toContain('soup');
+    await api.patch('soup', { archived: false });
+    expect((await api.get('soup')).archived_at).toBeNull();
+  });
+  it('sends archive parameters to the configured API', async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => new Response('[]')); vi.stubGlobal('fetch', fetchMock);
+    const api = new ArchiveApi(); await api.connect();
+    await api.list({ archived: true }); await api.search('x', true);
+    expect(fetchMock.mock.calls[1]?.[0]).toContain('archived=true');
+    expect(fetchMock.mock.calls[2]?.[0]).toContain('include_archived=true');
+  });
 });

@@ -33,3 +33,4 @@ use the editor.
 - Render local API consumers only after hydration; localhost refers to the visitor's machine, never the SSR host.
 - Keep fallback conversations in a per-client in-memory store; never mix sample mutations into a connected local archive.
 - Render message Markdown with react-markdown and remark-gfm without raw HTML support for safe tables and links.
+- Load the full archive once with archived=all and split active/archived in the UI; filtered lists also fetch archived=all. Why: one cache drives both sidebar counts and views.

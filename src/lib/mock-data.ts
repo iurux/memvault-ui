@@ -1,14 +1,14 @@
 export type Source = 'claude' | 'chatgpt' | 'mcp' | 'chat' | 'manual';
 export interface Message { role: 'user' | 'assistant' | 'note'; content: string; created_at: string }
-export interface ConversationSummary { id: string; title: string; source: Source; tags: string[]; created_at: string; snippet: string }
+export interface ConversationSummary { id: string; title: string; source: Source; tags: string[]; created_at: string; snippet: string; archived: boolean; archived_at: string | null }
 export interface Conversation extends ConversationSummary { messages: Message[] }
 
 const date = (day: string) => `${day}T10:30:00Z`;
 function conversation(id: string, title: string, source: Source, tags: string[], day: string, snippet: string, question: string, answer: string): Conversation {
-  return { id, title, source, tags, created_at: date(day), snippet, messages: question ? [{ role: 'user', content: question, created_at: date(day) }, { role: 'assistant', content: answer, created_at: date(day) }] : [{ role: 'note', content: answer, created_at: date(day) }] };
+  return { id, title, source, tags, created_at: date(day), snippet, archived: false, archived_at: null, messages: question ? [{ role: 'user', content: question, created_at: date(day) }, { role: 'assistant', content: answer, created_at: date(day) }] : [{ role: 'note', content: answer, created_at: date(day) }] };
 }
 export function createSampleConversations(): Conversation[] {
-  return [
+  return markArchived([
     conversation('soup', 'A simple vegetable soup for a quiet evening', 'claude', ['cooking', 'recipes'], '2026-11-14', 'A flexible one-pot soup with everyday vegetables, white beans, and a little lemon.', 'What is an easy vegetable soup I can make with pantry staples?', `Start with onion, carrots, and celery, then add whatever vegetables you have. White beans make it a satisfying meal without much extra work.
 
 ## Ingredients
@@ -44,5 +44,8 @@ Serve with bread. Refrigerate leftovers promptly in shallow containers, and rehe
     conversation('python', 'Python 小练习：按类型整理文件', 'mcp', ['programming', 'learning'], '2026-09-26', '先打印分类计划，再考虑移动文件，避免覆盖同名文件。', '怎样用 Python 按文件类型分类，并先预览结果？', '## 先做 dry run\n\n第一版只打印计划，不移动任何文件。\n\n```python\nfrom pathlib import Path\n\nfolder = Path("example_files")\nfor file in folder.iterdir():\n    if file.is_file():\n        category = file.suffix.lower() or "other"\n        print(file.name, "->", category)\n```\n\n用一个只包含测试文件的目录练习。确认分类规则后，再加入移动操作。遇到重名文件时不要覆盖，而是加一个编号。'),
     conversation('bread', 'Baking a simple loaf of bread', 'chatgpt', ['cooking', 'baking'], '2026-09-18', 'Flour, water, yeast, and salt: a straightforward loaf with time to rise.', 'What is a basic bread recipe for a beginner?', '## A small everyday loaf\n\n| Ingredient | Amount |\n| --- | --- |\n| Bread flour | 500 g |\n| Water | 325 g |\n| Instant yeast | 7 g |\n| Salt | 10 g |\n\n1. Mix the ingredients until no dry flour remains.\n2. Knead until the dough becomes smooth and elastic.\n3. Cover and let it rise until roughly doubled in size.\n4. Shape, place in a loaf tin, and let it rise again.\n5. Bake in a preheated oven at 220°C for about 30–35 minutes, adjusting for your oven.\n\nLet the loaf cool before slicing. A slower rise in a cooler room is normal.'),
     conversation('bookclub', '给读书小组的讨论问题', 'manual', ['books', 'reading'], '2026-09-05', '从人物、叙述方式和一个难忘的场景开始讨论，不必寻找唯一答案。', '', '## 三个讨论起点\n\n1. 哪个人物的决定让你最意外？\n2. 如果换一个叙述者，故事会有什么不同？\n3. 哪个场景最值得重新阅读？\n\n### 留给不同的感受\n\n有人喜欢语言，有人关注情节，也有人记住一个很小的细节。讨论时可以回到具体段落，听听不同读者为什么产生不同印象。\n\n最后，每个人推荐一本相关的书，并用一句话说明理由。'),
-  ];
+  ]);
+}
+function markArchived(list: Conversation[]): Conversation[] {
+  return list.map(c => c.id === 'bookclub' ? { ...c, archived: true, archived_at: date('2026-11-01') } : c);
 }
