@@ -35,3 +35,4 @@ use the editor.
 - Render message Markdown with react-markdown and remark-gfm without raw HTML support for safe tables and links.
 - Load the full archive once with archived=all and split active/archived in the UI; filtered lists also fetch archived=all. Why: one cache drives both sidebar counts and views.
 - Message edits always PATCH the full ordered message list via `setMessages`, applied optimistically to the detail cache with rollback. Why: the API replaces the whole list.
+- Starred state is toggled optimistically across every ['archive'] cache entry; lists sort starred first, then newest. Why: the item must jump to the top instantly.

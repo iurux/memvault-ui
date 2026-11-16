@@ -73,4 +73,13 @@ describe('local archive contract', () => {
     await api.setMessages('soup', [{ role: 'user', content: 'Hi' }, { role: 'note', content: '' }]);
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ method: 'PATCH', body: '{"messages":[{"role":"user","content":"Hi"}]}' });
   });
+  it('lists starred conversations first and filters by starred', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError()));
+    const api = new ArchiveApi(); await api.connect();
+    await api.patch('os', { starred: true });
+    expect((await api.list())[0]?.id).toBe('os');
+    expect((await api.list({ starred: true })).map(c => c.id)).toEqual(['os']);
+    await api.patch('os', { starred: false });
+    expect((await api.get('os')).starred_at).toBeNull();
+  });
 });

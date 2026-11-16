@@ -148,3 +148,16 @@ kbd { border: 1px solid var(--border); border-radius: 3px; font-family: inherit;
 .role-choice.active { border-color: var(--border); color: var(--primary); }
 .role-select { background: transparent; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; text-transform: uppercase; color: var(--muted-foreground); padding: 1px 4px; }
 .edit-all-bar { position: sticky; bottom: 0; margin: 30px -12px -40px; display: flex; align-items: center; gap: 4px; padding: 10px 12px; background: var(--paper); border-top: 1px solid var(--border); font-size: 11px; color: var(--muted-foreground); }
+.row-wrap { position: relative; }
+.row-wrap .conversation-row { padding-right: 48px; }
+.star-toggle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px; background: transparent; color: var(--muted-foreground); opacity: .3; transition: opacity 150ms, color 150ms; }
+.star-toggle svg { width: 14px; height: 14px; stroke-width: 1.5; }
+.star-toggle:hover, .star-toggle:focus-visible { opacity: 1; color: var(--foreground); outline: none; }
+.star-toggle.is-starred { opacity: 1; color: #C9A55C; }
+.star-toggle.is-starred svg { fill: #C9A55C; }
+.row-star { position: absolute; top: 18px; right: 18px; opacity: 0; }
+.row-wrap:hover .row-star { opacity: .55; }
+.row-wrap .row-star:hover, .row-wrap .row-star:focus-visible, .row-star.is-starred { opacity: 1; }
+.reader-title .star-toggle { vertical-align: middle; margin-left: 10px; }
+.reader-title { display: flex; align-items: flex-start; gap: 4px; } .reader-title .star-toggle { margin-top: 8px; flex-shrink: 0; }
+@media (hover: none) { .row-star { opacity: .4; } }

@@ -2,7 +2,7 @@ import { createSampleConversations, type Conversation, type Message, type Conver
 export type { Conversation, ConversationSummary, Message, Source } from './mock-data';
 export interface TagCount { tag: string; count: number }
 export interface SearchResult { conversation_id: string; title: string; snippet: string; score: number }
-export interface Filters { tag?: string; source?: string; limit?: number; archived?: boolean | 'all' }
+export interface Filters { tag?: string; source?: string; limit?: number; archived?: boolean | 'all'; starred?: boolean }
 export class ApiError extends Error {}
 export class ArchiveApi {
   baseUrl: string;
@@ -31,11 +31,12 @@ export class ArchiveApi {
   }
   async list(filters: Filters = {}): Promise<ConversationSummary[]> {
     const archived = filters.archived ?? false;
-    if (this.mode === 'sample') return this.samples.filter(c => (archived === 'all' || Boolean(c.archived) === archived) && (!filters.tag || c.tags.includes(filters.tag)) && (!filters.source || c.source === filters.source)).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, filters.limit ?? 1000).map(({ messages, ...summary }) => ({ ...summary, tags: [...summary.tags] }));
+    if (this.mode === 'sample') return this.samples.filter(c => (archived === 'all' || Boolean(c.archived) === archived) && (!filters.tag || c.tags.includes(filters.tag)) && (!filters.source || c.source === filters.source) && (!filters.starred || Boolean(c.starred))).sort((a, b) => Number(Boolean(b.starred)) - Number(Boolean(a.starred)) || b.created_at.localeCompare(a.created_at)).slice(0, filters.limit ?? 1000).map(({ messages, ...summary }) => ({ ...summary, tags: [...summary.tags] }));
     const params = new URLSearchParams({ limit: String(filters.limit ?? 1000) });
     if (archived !== false) params.set('archived', String(archived));
     if (filters.tag) params.set('tag', filters.tag);
     if (filters.source) params.set('source', filters.source);
+    if (filters.starred) params.set('starred', 'true');
     return this.request(`/api/conversations?${params}`);
   }
   async get(id: string): Promise<Conversation> {
@@ -60,11 +61,12 @@ export class ArchiveApi {
       return { conversation_id: c.id, title: c.title, snippet: `${start ? '…' : ''}${content.slice(start, start + 160).replace(/\n/g, ' ')}`, score: 1 };
     });
   }
-  async patch(id: string, changes: { title?: string; tags?: string[]; archived?: boolean }): Promise<void> {
+  async patch(id: string, changes: { title?: string; tags?: string[]; archived?: boolean; starred?: boolean }): Promise<void> {
     if (this.mode !== 'sample') { await this.request(`/api/conversations/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(changes) }); return; }
     const found = this.samples.find(c => c.id === id);
     if (!found) throw new ApiError('Conversation not found.');
     Object.assign(found, changes);
+    if (changes.starred !== undefined) found.starred_at = changes.starred ? new Date().toISOString() : null;
     if (changes.archived !== undefined) found.archived_at = changes.archived ? new Date().toISOString() : null;
   }
   async setMessages(id: string, messages: { role: string; content: string }[]): Promise<Conversation> {

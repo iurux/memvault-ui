@@ -1,11 +1,11 @@
 export type Source = 'claude' | 'chatgpt' | 'mcp' | 'chat' | 'manual';
 export interface Message { role: 'user' | 'assistant' | 'note'; content: string; created_at: string }
-export interface ConversationSummary { id: string; title: string; source: Source; tags: string[]; created_at: string; snippet: string; archived: boolean; archived_at: string | null }
+export interface ConversationSummary { id: string; title: string; source: Source; tags: string[]; created_at: string; snippet: string; archived: boolean; archived_at: string | null; starred?: boolean; starred_at?: string | null }
 export interface Conversation extends ConversationSummary { messages: Message[] }
 
 const date = (day: string) => `${day}T10:30:00Z`;
 function conversation(id: string, title: string, source: Source, tags: string[], day: string, snippet: string, question: string, answer: string): Conversation {
-  return { id, title, source, tags, created_at: date(day), snippet, archived: false, archived_at: null, messages: question ? [{ role: 'user', content: question, created_at: date(day) }, { role: 'assistant', content: answer, created_at: date(day) }] : [{ role: 'note', content: answer, created_at: date(day) }] };
+  return { id, title, source, tags, created_at: date(day), snippet, archived: false, archived_at: null, starred: false, starred_at: null, messages: question ? [{ role: 'user', content: question, created_at: date(day) }, { role: 'assistant', content: answer, created_at: date(day) }] : [{ role: 'note', content: answer, created_at: date(day) }] };
 }
 export function createSampleConversations(): Conversation[] {
   return markArchived([
