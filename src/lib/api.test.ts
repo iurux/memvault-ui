@@ -17,7 +17,7 @@ describe('local archive contract', () => {
     const api = new ArchiveApi(); await api.connect();
     const list = await api.list({ tag: 'learning', source: 'claude' });
     expect(list.map(c => c.id)).toEqual(['os']);
-    const all = await api.list(); expect(all[0]?.id).toBe('opt');
+    const all = await api.list(); expect(all[0]?.id).toBe('soup');
   });
   it('searches Chinese content and limits search to 20 results', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError()));
@@ -38,9 +38,9 @@ describe('local archive contract', () => {
   });
   it('sends the specified search and mutation contract to the configured API', async () => {
     const fetchMock = vi.fn().mockImplementation(async () => new Response('[]')); vi.stubGlobal('fetch', fetchMock);
-    const api = new ArchiveApi('http://localhost:8765/'); await api.connect(); await api.search('OPT');
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('http://localhost:8765/api/search?q=OPT&k=20');
-    await api.patch('opt', { title: 'Updated' });
+    const api = new ArchiveApi('http://localhost:8765/'); await api.connect(); await api.search('bread');
+    expect(fetchMock.mock.calls[1]?.[0]).toBe('http://localhost:8765/api/search?q=bread&k=20');
+    await api.patch('soup', { title: 'Updated' });
     expect(fetchMock.mock.calls[2]?.[1]).toMatchObject({ method: 'PATCH', body: '{"title":"Updated"}' });
   });
 });
