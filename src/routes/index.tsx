@@ -1,23 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-// The home route ships no og:image, so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
+import { ClientOnly, createFileRoute } from '@tanstack/react-router';
+import { Component, Suspense, type ReactNode } from 'react';
+import Memvault, { ArchiveSkeleton } from '@/components/archive/memvault';
+import { Button } from '@/components/ui/button';
+export const Route = createFileRoute('/')({
+  head: () => ({ meta: [
+    { title: 'memvault — Your personal archive' },
+    { name: 'description', content: 'A quiet, local-first space for saved AI conversations and notes.' },
+    { property: 'og:title', content: 'memvault — Your personal archive' },
+    { property: 'og:description', content: 'A quiet, local-first space for saved AI conversations and notes.' },
+    { property: 'og:type', content: 'website' },
+    { name: 'twitter:card', content: 'summary' },
+  ] }),
   component: Index,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+class ArchiveBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  override state: { error: Error | null } = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  override render() { return this.state.error ? <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8"><div className="wordmark">memvault</div><p className="text-sm text-muted-foreground">{this.state.error.message}</p><Button variant="outline" onClick={() => window.location.reload()}>Try again</Button></div> : this.props.children; }
 }
+function Index() { return <ClientOnly fallback={<ArchiveSkeleton />}><ArchiveBoundary><Suspense fallback={<ArchiveSkeleton />}><Memvault /></Suspense></ArchiveBoundary></ClientOnly>; }

@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Keep all external archive requests in `src/lib/api.ts` and cache reads with TanStack Query so the local API contract is easy to replace.
+- Render local API consumers only after hydration; localhost refers to the visitor's machine, never the SSR host.
+- Keep fallback conversations in a per-client in-memory store; never mix sample mutations into a connected local archive.
+- Render message Markdown with react-markdown and remark-gfm without raw HTML support for safe tables and links.
